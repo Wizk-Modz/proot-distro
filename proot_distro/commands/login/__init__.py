@@ -499,7 +499,7 @@ def _login_with_rootfs(container_name: str, args, lock,
     # process). In minimal mode only PROOT_L2S_DIR is exported; proot
     # debug vars are skipped to keep the environment truly minimal.
     if not minimal:
-        for var in ("PROOT_NO_SECCOMP", "PROOT_VERBOSE"):
+        for var in ("PROOT_NO_SECCOMP", "PROOT_VERBOSE", "PROOT_DBG_STOPS"):
             val = os.environ.get(var)
             if val:
                 child_env[var] = val
