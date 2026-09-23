@@ -717,7 +717,7 @@ def _build_child_env(engine, stage):
     env.update(_identity_env(stage))
 
     # proot toggles inherited from host.
-    for var in ("PROOT_NO_SECCOMP", "PROOT_VERBOSE", "PROOT_DBG_STOPS"):
+    for var in ("PROOT_NO_SECCOMP", "PROOT_VERBOSE"):
         v = os.environ.get(var, "")
         if v:
             env[var] = v
