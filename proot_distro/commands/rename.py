@@ -25,8 +25,8 @@
 # every command that accepts a container identifier.
 #
 # Both names are entries of CONTAINERS_DIR, which is guest-writable on
-# Termux -- it sits under the $TERMUX_PREFIX bound read-write into every
-# non-isolated container -- so neither is composed into a path and
+# Termux -- it sits under $TERMUX_PREFIX, which a session can bind -- so
+# neither is composed into a path and
 # handed to os.rename(). The directory is opened once through statedir's
 # O_NOFOLLOW walk and the rename runs src_dir_fd/dst_dir_fd on it: a
 # `containers/<old>` a guest had left behind as a symlink used to be

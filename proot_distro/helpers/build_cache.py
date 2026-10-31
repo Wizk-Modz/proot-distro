@@ -51,8 +51,8 @@ def _open_lock_fd():
     directory, which accepts a symlink to a directory, and then
     os.open(O_RDWR | O_CREAT) on the lock file itself, which follows one.
     The cache is guest-writable on Termux -- it sits under the
-    $TERMUX_PREFIX bound read-write into every non-isolated container --
-    and this name is as predictable as they come, so a planted
+    $TERMUX_PREFIX, which a session can bind -- and this name is as
+    predictable as they come, so a planted
     `build_cache_index.json.lock -> <host path>` had this program create
     that file, or open an existing one and hold a lock on it. A FIFO under
     the same name was worse: the open blocked until a peer appeared, which

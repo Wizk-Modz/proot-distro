@@ -57,9 +57,11 @@
 # unlinks it and puts a symlink in its place, and the caller's open()
 # then writes the file's bytes into whatever that names. The rename
 # afterwards publishes the symlink, so the cache entry ends up pointing
-# at the host file it just overwrote. On Termux the directory really is
-# shared: RUNTIME_DIR and BASE_CACHE_DIR both sit under the
-# $TERMUX_PREFIX bound read-write into every non-isolated container.
+# at the host file it just overwrote. On Termux the directory can really
+# be shared: RUNTIME_DIR and BASE_CACHE_DIR both sit under the
+# $TERMUX_PREFIX, which a session reaches when it binds the prefix --
+# explicitly with --bind, or because a cross-arch build binds it for the
+# emulator's loader.
 #
 # The descriptor settles which inode the bytes go into, and the rename
 # publishes that same inode -- it is created O_EXCL and never named

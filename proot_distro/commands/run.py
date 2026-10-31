@@ -27,8 +27,8 @@
 #
 # What that block *says* is nobody's promise. It is a registry's JSON,
 # persisted verbatim by install, and on Termux the file holding it sits
-# under the $TERMUX_PREFIX bound read-write into every non-isolated
-# container. So the three fields this command reads are checked against
+# under $TERMUX_PREFIX, which a session can bind. So the three fields
+# this command reads are checked against
 # the shape OCI gives them before anything is built out of them:
 # Entrypoint and Cmd are lists of strings and WorkingDir is a string, or
 # the command refuses. `list(cfg.get("Entrypoint") or [])` accepted far

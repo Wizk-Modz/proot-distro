@@ -41,8 +41,8 @@
 # open_container_dir), and every member is written as (dir_fd, name)
 # below that descriptor. Two different things made that necessary. The
 # container directory itself is guest-writable on Termux, where the
-# runtime tree sits under the $TERMUX_PREFIX bound read-write into every
-# non-isolated container, so a planted `containers/<name> -> <host dir>`
+# runtime tree sits under $TERMUX_PREFIX, which a session can bind, so a
+# planted `containers/<name> -> <host dir>`
 # had the whole archive extracted inside that host directory — _safe_dest
 # clamped every member under the container directory, which is exactly
 # where the link led, and the check that the rootfs was not a symlink ran

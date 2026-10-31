@@ -37,7 +37,6 @@ from proot_distro import dirfd
 from proot_distro.execenv import (
     CONTAINER_MARKER, IDENTITY_ENV_KEYS, is_exportable, is_host_exec_var,
 )
-from proot_distro.constants import TERMUX_PREFIX
 from proot_distro.helpers.docker.cache import manifest_config_digest
 from proot_distro.paths import container_image_config, read_container_manifest
 
@@ -90,9 +89,10 @@ IMAGE_ENV_BLOCKED = frozenset({
 
 # Per-session vars (HOME, USER, TERM, COLORTERM) belong to the spawning
 # shell, not the container — baking them in would override the values
-# set by `su - <other-user>`. PATH is handled specially with a
-# case-guarded append. Proot-internal vars are host-side and have no
-# meaning inside the guest.
+# set by `su - <other-user>`. PATH is left to the distro's /etc/profile
+# too: this snippet neither appends a host directory to it nor replaces
+# it. Proot-internal vars are host-side and have no meaning inside the
+# guest.
 _PROFILE_INJECT_SKIP = frozenset({
     "HOME", "USER", "TERM", "COLORTERM",
     "PATH",
@@ -177,7 +177,7 @@ def identity_env_pairs(container_name: str):
 
 
 def inject_termux_profile(rootfs: str, env: dict, *,
-                          rootfs_fd=None, termux_path: bool = True) -> None:
+                          rootfs_fd=None) -> None:
     """Write a profile.d snippet that re-applies the login-time environment.
 
     Login shells source /etc/profile, which reinitialises the environment
@@ -193,17 +193,11 @@ def inject_termux_profile(rootfs: str, env: dict, *,
     default-mode Termux login, and the file outlived that: an
     `--isolated` session after a `rename` had `su -` re-export the
     previous container's name, and every other value a session in
-    another mode had been given. What *is* mode-bound is the PATH
-    append, since the Termux prefix it names is bound into the guest
-    only in the default mode on Termux; *termux_path* says whether it
-    is, and the block is left out otherwise -- exporting a PATH entry
-    that names a directory the guest cannot see would be the same kind
-    of stale.
+    another mode had been given.
 
-    PATH gets a case-guarded append so the system PATH from /etc/profile
-    keeps priority. Other vars are exported unconditionally so the
-    proot-distro value wins. Per-session vars and proot-internal vars
-    are excluded via _PROFILE_INJECT_SKIP.
+    PATH is re-exported like any other variable, holding exactly what
+    the session was given. The Termux prefix is not bound into the
+    guest, so no snippet appends its bin directory.
     """
     # The snippet is written on the host side of proot, into a directory
     # the guest owns, so neither the path nor the name may be trusted:
@@ -217,7 +211,7 @@ def inject_termux_profile(rootfs: str, env: dict, *,
     if profile_fd is None:
         return
     try:
-        _write_profile_snippet(profile_fd, env, termux_path)
+        _write_profile_snippet(profile_fd, env)
     finally:
         os.close(profile_fd)
 
@@ -255,23 +249,13 @@ def _open_profile_d(rootfs: str, rootfs_fd=None):
         return None
 
 
-def _write_profile_snippet(profile_fd: int, env: dict,
-                           termux_path: bool) -> None:
+def _write_profile_snippet(profile_fd: int, env: dict) -> None:
     """Compose and write termux-profile.sh under the open profile.d fd."""
     # Remove the legacy filename (PATH-only era) so a previously-used
     # container doesn't keep sourcing stale content.
     dirfd.unlink_quietly(profile_fd, "termux-prefix.sh")
-    termux_bin = f"{TERMUX_PREFIX}/bin"
 
     lines = []
-    if termux_path:
-        lines += [
-            'case ":${PATH}:" in',
-            f'  *":{termux_bin}:"*) ;;',
-            f'  *) export PATH="${{PATH}}:{termux_bin}" ;;',
-            'esac',
-        ]
-
     for key in sorted(env):
         if key in _PROFILE_INJECT_SKIP:
             continue

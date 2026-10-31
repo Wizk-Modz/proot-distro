@@ -345,11 +345,12 @@ def _run_install(
         # rootfs, and every one of them writes: a name resolved a second
         # time is a name that can have been re-pointed since the
         # extraction finished. `containers/<name>` is guest-writable on
-        # Termux -- it sits under the bound $TERMUX_PREFIX -- so
-        # os.path.isdir() on the composed path followed whatever a
-        # concurrent same-user process left under it, and the three
-        # writers then resolved it again, replacing etc/resolv.conf and
-        # etc/hosts and chmod'ing and appending to passwd-like files in a
+        # Termux -- it sits under $TERMUX_PREFIX, which a session can
+        # bind -- so os.path.isdir() on the composed path followed
+        # whatever a concurrent same-user process left under it, and the
+        # three writers then resolved it again, replacing etc/resolv.conf
+        # and etc/hosts and chmod'ing and appending to passwd-like files
+        # in a
         # host directory of that process's choosing. `etc` is opened once
         # off the descriptor the extraction itself wrote through, and the
         # three fixups work from that one descriptor.

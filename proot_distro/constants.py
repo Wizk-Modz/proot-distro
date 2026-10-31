@@ -106,10 +106,13 @@ DEFAULT_PRIMARY_NS = "8.8.8.8"
 DEFAULT_SECONDARY_NS = "8.8.4.4"
 
 if IS_TERMUX:
+    # The Termux prefix is not bound into a container by default, so its
+    # bin directory is not on the guest PATH either. Only the Android
+    # system directories, which the default binding set mounts, are.
     DEFAULT_PATH_ENV = (
         "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
         ":/usr/local/games:/usr/games"
-        f":{TERMUX_PREFIX}/bin:/system/bin:/system/xbin"
+        ":/system/bin:/system/xbin"
     )
 else:
     DEFAULT_PATH_ENV = (

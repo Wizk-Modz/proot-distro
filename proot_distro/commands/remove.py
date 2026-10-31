@@ -269,10 +269,10 @@ def _delete_images(targets: list, verbose: bool) -> None:
     Both caches are opened as descriptors and every entry is unlinked as
     (dir_fd, name). Naming them was enough to have this command delete
     files outside the cache entirely: both directories sit below
-    BASE_CACHE_DIR, which on Termux is under the $TERMUX_PREFIX bound
-    read-write into every non-isolated container, so `oci_manifests`
-    (or `cache` above it) is a name a guest can leave behind as a
-    symlink -- and os.remove() follows one.
+    BASE_CACHE_DIR, which on Termux is under $TERMUX_PREFIX, which a
+    session can bind, so `oci_manifests` (or `cache` above it) is a
+    name a guest can leave behind as a symlink -- and os.remove()
+    follows one.
     """
     for record in targets:
         log_info(f"Removing image '{_display(record)}' "

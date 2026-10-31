@@ -104,9 +104,9 @@ def is_exportable(key: str, value: str) -> bool:
     (UnicodeEncodeError); and a string past MAX_ENV_STRING_BYTES, which
     the kernel refuses with E2BIG. All three come out of files a
     stranger writes -- an image's config, and on Termux the container's
-    own manifest.json, which sits under the bound $TERMUX_PREFIX -- so
-    what such an entry decides is whether it is exported, never whether
-    the session or the step runs.
+    own manifest.json, which sits under $TERMUX_PREFIX, which a session
+    can bind -- so what such an entry decides is whether it is exported,
+    never whether the session or the step runs.
     """
     if "\x00" in key or "\x00" in value:
         return False

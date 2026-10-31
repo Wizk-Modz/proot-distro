@@ -42,8 +42,8 @@
 # means writing to its *parent*, and no session confined to the rootfs
 # can reach that: the guest sees the directory only through the bind,
 # which gives no way to its parent (proot canonicalises the guest path
-# first, so /dev/shm/.. is /dev). What is left is a session that already
-# has $TERMUX_PREFIX bound read-write — which is to say one that is
+# first, so /dev/shm/.. is /dev). What is left is a session that has
+# bound $TERMUX_PREFIX itself — which is to say one that is
 # already outside the container, and can rewrite this program itself.
 #
 # The guest's own /tmp is still created, because containers have always

@@ -299,8 +299,8 @@ def _termux_host_proot_args(tmp_path, monkeypatch, **over):
                         lambda args: calls.append("dalvik"))
     monkeypatch.setattr(proot_cmd, "_add_termux_app_binds",
                         lambda args: calls.append("termux_app"))
-    rootfs = tmp_path / "rootfs"
-    rootfs.mkdir()
+    rootfs = over.pop("rootfs", None) or (tmp_path / "rootfs")
+    rootfs.mkdir(exist_ok=True)
     base = dict(
         proot_bin="proot", rootfs=str(rootfs), login_wd="/",
         login_uid=None, login_gid=None, login_home=None,
@@ -337,9 +337,15 @@ def test_termux_type_isolated_no_host_dirs(tmp_path, monkeypatch):
     assert calls == []
 
 
+def _bound_sources(args):
+    """The source half of every --bind entry, in order."""
+    return [a[len("--bind="):].split(":", 1)[0] for a in args
+            if a.startswith("--bind=")]
+
+
 def test_normal_type_binds_android_data_and_storage(tmp_path, monkeypatch):
     # Normal-type, non-isolated: dalvik caches, Termux app dirs, shared
-    # storage, system dirs, and the Termux prefix bridge are all bound.
+    # storage and system dirs are bound, but not the Termux prefix.
     args, calls = _termux_host_proot_args(
         tmp_path, monkeypatch, dist_type="normal",
         login_uid="0", login_gid="0", login_home="/root",
@@ -348,7 +354,40 @@ def test_normal_type_binds_android_data_and_storage(tmp_path, monkeypatch):
     assert "--bind=/system" in args
     assert "--bind=/storage" in args
     assert calls == ["dalvik", "termux_app"]
-    assert f"--bind={TERMUX_PREFIX}" in args
+    assert TERMUX_PREFIX not in _bound_sources(args)
+
+
+def test_normal_type_never_binds_the_termux_prefix(tmp_path, monkeypatch):
+    # Regression: the prefix used to be bound for normal-type containers,
+    # which put RUNTIME_DIR and the image cache inside a guest that was
+    # otherwise not meant to see them. A session that needs host tools
+    # binds the prefix itself with --bind.
+    for isolated in (False, True):
+        rootfs = tmp_path / f"rootfs-{isolated}"
+        rootfs.mkdir()
+        args, _calls = _termux_host_proot_args(
+            tmp_path, monkeypatch, rootfs=rootfs, dist_type="normal",
+            isolated=isolated, login_uid="0", login_gid="0",
+            login_home="/root", inner=["/bin/sh", "-l"],
+        )
+        sources = _bound_sources(args)
+        assert TERMUX_PREFIX not in sources
+        assert f"{TERMUX_PREFIX}/bin" not in sources
+
+
+def test_guest_path_has_no_termux_prefix_bin(builders, capsys, monkeypatch):
+    # The prefix is not bound, so its bin directory must not be handed to
+    # the guest through PATH either. IS_TERMUX is faked so the code path
+    # that used to append it is the one under test.
+    from proot_distro.commands import login as login_mod
+
+    monkeypatch.setattr(login_mod, "IS_TERMUX", True)
+    builders.make_container("box", arch=HOST_ARCH)
+    env = _builders.login_child_env(
+        command_login, _login_args("box"), capsys,
+    )
+    components = env.get("PATH", "").split(":")
+    assert f"{TERMUX_PREFIX}/bin" not in components
 
 
 def test_minimal_login_keeps_image_env(builders, capsys):

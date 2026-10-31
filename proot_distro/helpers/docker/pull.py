@@ -499,7 +499,8 @@ def _cached_pin(image_ref: str, ref, arch: str) -> tuple:
     """(manifest, image_config) for a pinned reference, or (None, {}).
 
     A manifest-cache entry is a file a guest can write on Termux, where
-    BASE_CACHE_DIR sits under the bound $TERMUX_PREFIX, so for a tag the
+    BASE_CACHE_DIR sits under $TERMUX_PREFIX, which a session can bind,
+    so for a tag the
     program has only ever had its word for which layers and which config
     the image has -- a tag names no content to check that against. A pin
     does. The entry keeps the raw documents the pull verified, and a hit

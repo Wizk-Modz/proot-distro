@@ -126,23 +126,23 @@ def _profile_dir(tmp_path):
     return root
 
 
-def test_inject_profile_path_guard(tmp_path):
+def test_inject_profile_never_touches_path(tmp_path):
+    # The Termux prefix is not bound into the guest, so the snippet must
+    # not append $PREFIX/bin to PATH either -- a directory the guest
+    # cannot see would be a stale entry, and PATH itself stays the
+    # distro's /etc/profile to decide.
     root = _profile_dir(tmp_path)
     login_env.inject_termux_profile(str(root), {"PATH": "/bin"})
     content = (root / "etc" / "profile.d" / "termux-profile.sh").read_text()
-    assert 'case ":${PATH}:" in' in content
-    assert "export PATH=" in content
+    assert "PATH" not in content
 
 
-def test_inject_profile_path_block_is_mode_bound(tmp_path):
-    # The PATH append names the Termux prefix, which is bound into the
-    # guest only in the default mode on Termux; elsewhere the block
-    # would re-export a directory the guest cannot see.
+def test_inject_profile_has_no_prefix_bin(tmp_path):
     root = _profile_dir(tmp_path)
-    login_env.inject_termux_profile(str(root), {"FOO": "bar"},
-                                    termux_path=False)
+    login_env.inject_termux_profile(str(root), {"FOO": "bar"})
     content = (root / "etc" / "profile.d" / "termux-profile.sh").read_text()
     assert "PATH" not in content
+    assert "/bin:" not in content
     assert "export FOO='bar'" in content
 
 

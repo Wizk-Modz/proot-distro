@@ -112,8 +112,8 @@ def _open_container_path(path: str, name: str, create: bool) -> int:
     and "there is no such container yet" are both ordinary answers, and
     only the caller knows which one it asked for. Anything else this walk
     reports is not: the components below CONTAINERS_DIR are guest content
-    on Termux, where the runtime tree sits under the $TERMUX_PREFIX bound
-    read-write into every non-isolated container, so a `containers/<name>`
+    on Termux, where the runtime tree sits under $TERMUX_PREFIX, which a
+    session can bind, so a `containers/<name>`
     that is not a plain directory is something a session left behind. The
     callers are all about to write into that directory or remove it, and
     following a link there is exactly how a container's contents end up in
@@ -295,8 +295,8 @@ def open_container_manifest(name: str):
     The sentinel is read at every `login` and `run`: its Env goes into
     the child environment and its Entrypoint/Cmd is what `run` executes.
     It was opened by its composed path, and the container directory is
-    guest-writable on Termux -- it sits under the $TERMUX_PREFIX bound
-    read-write into every non-isolated container -- so a session could
+    guest-writable on Termux -- it sits under $TERMUX_PREFIX, which a
+    session can bind -- so a session could
     leave the name behind as a symlink and have the image config come
     out of any file the user can read, or as a FIFO, where the open
     waits for a peer that never arrives. open_regular_at refuses both,
@@ -327,7 +327,8 @@ def read_container_manifest(name: str) -> dict:
     The read is capped (statedir.read_state_file). json.load() on the
     descriptor read until the file ended, and how long that is belongs
     to whoever wrote the file: on Termux `containers/<name>` sits under
-    the bound $TERMUX_PREFIX, so a running guest chose what `login`,
+    $TERMUX_PREFIX, which a session can bind, so a running guest chose
+    what `login`,
     `run` and `reset` allocated. An oversized file comes back as an
     OSError, which is what every caller here already answers "no usable
     manifest" to.
@@ -350,8 +351,8 @@ def manifest_image_config(data: dict) -> dict:
     missing key and a JSON null and nothing else, so an `image_config`
     that is a string or a list had `.get` called on it -- and the file
     it comes out of is the container directory's, which on Termux sits
-    under the $TERMUX_PREFIX bound read-write into every non-isolated
-    container. That AttributeError ended `login` (which takes the
+    under $TERMUX_PREFIX, which a session can bind. That AttributeError
+    ended `login` (which takes the
     image's Env from here) and `run` (which takes the Entrypoint and Cmd
     it executes), neither of which catches one.
     """

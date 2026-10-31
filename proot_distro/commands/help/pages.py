@@ -709,13 +709,19 @@ HELP_PAGES = {
                 "title": "NOTES",
                 "intro": (
                     (
+                        "The Termux prefix is not bound into the container "
+                        "and its bin directory is not added to PATH. Bind "
+                        "it explicitly with '--bind=$PREFIX' when a "
+                        "container needs host utilities such as "
+                        "termux-api."
+                        "\n\n"
                         "If host utilities like termux-api do not work, "
-                        "ensure that PATH includes Termux bin directory as "
-                        "well as special environment variables such as "
+                        "ensure that the special environment variables "
+                        "such as "
                         "ANDROID_ART_ROOT, ANDROID_DATA, ANDROID_I18N_ROOT, "
                         "ANDROID_ROOT, ANDROID_TZDATA_ROOT, BOOTCLASSPATH, "
-                        "EXTERNAL_STORAGE. Valid values can be retrieved "
-                        "through Termux shell."
+                        "EXTERNAL_STORAGE are set. Valid values can be "
+                        "retrieved through Termux shell."
                         "\n\n"
                         "Host storage bindings such as /sdcard may be "
                         "disabled if Termux app does not have necessary "

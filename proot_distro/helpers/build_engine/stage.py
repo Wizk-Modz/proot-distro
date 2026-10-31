@@ -36,9 +36,9 @@
 # scratch root is 0700 but that is only the invoking user's own
 # permission: a process a previous RUN step left running is that user --
 # nothing kills one off Termux, --kill-on-exit being a Termux-only proot
-# extension -- and on Termux the whole runtime tree is bound read-write
-# into every non-isolated container, which a cross-arch RUN step makes
-# certain of by binding $TERMUX_PREFIX for the emulator's loader. Moving
+# extension -- and on Termux the whole runtime tree sits under
+# $TERMUX_PREFIX, which a cross-arch RUN step binds for the emulator's
+# loader. Moving
 # the rootfs aside and leaving a symlink under the name was therefore
 # enough to have the rest of the build read and write somewhere else
 # entirely -- and what it reads goes into a layer `push` uploads.

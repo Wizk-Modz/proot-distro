@@ -27,8 +27,8 @@
 # are missing: a first run on a machine that has never had this program
 # installed must not fail because its own state directory does not exist
 # yet. Everything *below* a root is guest content on Termux, where both
-# roots sit under the $TERMUX_PREFIX bound read-write into every
-# non-isolated container, so a session can leave `containers/<name>`,
+# roots sit under $TERMUX_PREFIX, which a session can bind, so a session
+# can leave `containers/<name>`,
 # `cache` or `build-tmp` behind as a symlink to any directory the user
 # can write. Naming such a path is enough to have this program write --
 # or delete -- inside whatever it leads to: os.makedirs(exist_ok=True)
@@ -66,8 +66,8 @@ STATE_ROOTS = tuple(sorted({RUNTIME_DIR, BASE_CACHE_DIR}, key=len))
 # A container's manifest.json, a session record, the build-cache index
 # and a manifest-cache entry are all written here and are a few kilobytes
 # at most -- but the *file* is a stranger's to replace. On Termux the
-# whole state tree sits under the $TERMUX_PREFIX bound read-write into
-# every non-isolated container, so a running guest decided how many bytes
+# whole state tree sits under $TERMUX_PREFIX, which a session can bind,
+# so a running guest decided how many bytes
 # `login`, `run`, `ps`, `list --image`, `clear-cache` and `build` each
 # pulled into memory before finding out the document was nonsense:
 # json.load() on the descriptor reads until the file ends. 16 MiB is the

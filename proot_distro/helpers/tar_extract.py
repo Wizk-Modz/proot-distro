@@ -62,8 +62,8 @@
 #     difference between an archive-safe extractor and one that is also
 #     safe against a process writing into the tree at the same time --
 #     an image `install` is unpacking sits under CONTAINERS_DIR, which
-#     on Termux is inside the $TERMUX_PREFIX bound read-write into every
-#     non-isolated container. Files go in through open_new_at (O_EXCL),
+#     on Termux is inside $TERMUX_PREFIX, which a session can bind.
+#     Files go in through open_new_at (O_EXCL),
 #     so a hardlink left under a member's name is never written through
 #     either, which is the one thing O_NOFOLLOW cannot refuse.
 #   - Parent descriptors are cached one deep (_Parents). Members of a tar
@@ -188,8 +188,8 @@ def extract_tar_fd_to_rootfs(
     The same extraction, reading a descriptor rather than a name. Naming
     a blob twice — once to hash it, once to read it — is what leaves room
     for it to change in between, and on Termux that room is real:
-    LAYER_CACHE_DIR sits under the `$TERMUX_PREFIX` bound read-write into
-    every non-isolated container, so a session running alongside an
+    LAYER_CACHE_DIR sits under `$TERMUX_PREFIX`, which a session can
+    bind, so a session running alongside an
     install can reach it. A descriptor settles which *inode* is read.
 
     It does not settle which *bytes*: an inode can be truncated and

@@ -407,30 +407,12 @@ def _login_with_rootfs(container_name: str, args, lock,
         if IS_TERMUX and not minimal:
             setup_fake_sysdata(rootfs, container_fd=container_fd)
 
-    # Ensure Termux bin is always last in PATH so guest tools can
-    # invoke host Termux utilities. Skipped in --isolated and --minimal
-    # modes where TERMUX_PREFIX is not bound into the guest. Dedupes any
-    # existing occurrence first.
-    if IS_TERMUX and not isolated and not minimal:
-        termux_bin = f"{TERMUX_PREFIX}/bin"
-        components = [
-            c for c in child_env.get("PATH", "").split(":")
-            if c and c != termux_bin
-        ]
-        components.append(termux_bin)
-        child_env["PATH"] = ":".join(components)
-
     # Every session writes the snippet, so what `su -` re-exports is what
     # *this* session was handed: written only by a default-mode Termux
     # login, it outlived that and an --isolated session after a rename
-    # had `su -` announce the previous container's name. Only the PATH
-    # append is mode-bound, since the prefix it names is bound into the
-    # guest only in the default mode on Termux.
+    # had `su -` announce the previous container's name.
     if dist_type == "normal":
-        inject_termux_profile(
-            rootfs, child_env, rootfs_fd=rootfs_fd,
-            termux_path=IS_TERMUX and not isolated and not minimal,
-        )
+        inject_termux_profile(rootfs, child_env, rootfs_fd=rootfs_fd)
 
     # Architecture detection.
     target_arch = detect_installed_arch(rootfs, rootfs_fd=rootfs_fd)

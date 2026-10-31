@@ -365,11 +365,11 @@ def _make_build_tmp():
 
     RUNTIME_DIR/build-tmp is a predictable name inside the state tree, and
     tempfile.mkdtemp(dir=...) resolves it: a guest that left
-    `build-tmp -> <host dir>` behind -- the runtime tree is under the
-    $TERMUX_PREFIX bound read-write into every non-isolated container --
-    had every stage rootfs, every spooled ADD and every packed layer
-    assembled inside that host directory, and the cleanup at the end of
-    the build remove what it found there. The directory is walked down to
+    `build-tmp -> <host dir>` behind -- the runtime tree sits under the
+    $TERMUX_PREFIX, which a session can bind -- had every stage rootfs,
+    every spooled ADD and every packed layer assembled inside that host
+    directory, and the cleanup at the end of the build remove what it
+    found there. The directory is walked down to
     with O_NOFOLLOW and the scratch root created with mkdirat off the
     descriptor that walk validated; what is made *inside* it is this
     process's own, since the name is fresh and the mode is 0700.

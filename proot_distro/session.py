@@ -43,8 +43,8 @@
 # filesystem without flock support) returns None and must never prevent
 # a session from starting.
 #
-# SESSIONS_DIR is guest-writable: on Termux it sits under the
-# $TERMUX_PREFIX bound read-write into every non-isolated container. It
+# SESSIONS_DIR is guest-writable: on Termux it sits under
+# $TERMUX_PREFIX, which a session can bind. It
 # is therefore opened as a descriptor once, by an O_NOFOLLOW walk down
 # from RUNTIME_DIR, and every entry below it is named as (dir_fd, name).
 # os.makedirs(exist_ok=True) accepted a `sessions -> <host dir>` symlink

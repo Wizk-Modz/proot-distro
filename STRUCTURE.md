@@ -154,6 +154,8 @@ the `sysdata` stubs. A failed install removes what it made.
 **login / run.** Shared lock, then pin the rootfs as a descriptor. `passwd`
 reads the user through `guestfile`. `env`, `bindings`, `sysdata` and `shm`
 prepare binds and environment. `proot_cmd.build_proot_args` builds the argv.
+The Termux prefix is not bound and its `bin` is not on the guest `PATH`;
+a session that needs host tools asks for it with `--bind`.
 The session is recorded in `session.py`, and the process either `execvpe`s
 into proot (the lock fd is inherited, so the lock lives as long as the
 session) or is daemonised by `detach`. `run` reads Entrypoint/Cmd from
@@ -186,9 +188,11 @@ to SIGQUIT because proot ignores most other signals.
 
 ## Design rules that run through the code
 
-These follow from handling untrusted images and from Termux binding the
-runtime tree read-write into non-isolated containers. A guest can therefore
-rewrite anything under `RUNTIME_DIR` and `BASE_CACHE_DIR`.
+These follow from handling untrusted images and from the runtime tree living
+under `$TERMUX_PREFIX`, which a session reaches once it binds the prefix --
+explicitly with `--bind`, or because a cross-arch build binds it for the
+emulator's loader. A guest can therefore rewrite anything under
+`RUNTIME_DIR` and `BASE_CACHE_DIR`.
 
 - **Descriptors, not paths.** State directories are walked with `O_NOFOLLOW`
   (`statedir`) and every entry is addressed as `(dir_fd, name)` (`dirfd`).

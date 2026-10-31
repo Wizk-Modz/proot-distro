@@ -27,7 +27,9 @@
 #   3. --change-id for non-termux containers.
 #   4. --rootfs / --cwd / baseline /dev /proc /sys binds.
 #   5. Optional non-minimal binds: /dev/random etc., Android storage,
-#      Android system paths, Termux $HOME / $PREFIX bridges.
+#      Android system paths, Termux $HOME. The Termux prefix itself is
+#      not bound; a session that needs host utilities asks for it with
+#      --bind.
 #   6. User-supplied --bind entries (with overlap warning), then -p when
 #      ports are redirected.
 #   7. Inner command (shell or run-mode inner argv).
@@ -184,10 +186,15 @@ def _add_non_minimal_binds(
     # normal-type when not isolated, or when emulating (the QEMU loader
     # needs them), and for termux-type only when not isolated. Fully
     # isolated sessions of either type get no host directories.
+    #
+    # The Termux prefix is not among them. It used to be bound here for
+    # normal-type containers so that host utilities (termux-api, pkg, …)
+    # were reachable, and that put the whole prefix -- including
+    # RUNTIME_DIR and the image cache below it -- inside a guest that is
+    # not otherwise confined from it. A session can bind it explicitly
+    # with --bind when it wants those utilities.
     if IS_TERMUX and (not isolated or need_emu):
         args += system_bindings()
-        if dist_type != "termux":
-            args.append(f"--bind={TERMUX_PREFIX}")
 
     # A termux-type guest still needs its own cache dir to exist; create
     # it inside the rootfs (never bound from the host). Level by level off

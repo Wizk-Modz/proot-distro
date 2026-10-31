@@ -289,9 +289,9 @@ def opendir_under(root: str, parts, *, create: bool = False,
     against the directory being re-pointed afterwards -- which is why
     every user of the program's own state directories (locks, sessions,
     a container's sysdata) holds one of these instead of a path. Those
-    directories live under $TERMUX_PREFIX on Termux, bound read-write
-    into every non-isolated container, so their components are guest
-    content the same way a rootfs's are.
+    directories live under $TERMUX_PREFIX on Termux, which a session can
+    bind, so their components are guest content the same way a rootfs's
+    are.
 
     With create=True the missing levels are made on the way down;
     without it a missing level is simply a refusal. None means the

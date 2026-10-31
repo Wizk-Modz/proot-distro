@@ -56,8 +56,8 @@
 # re-acquisition.
 #
 # Every lock file is addressed as (directory fd, entry name), never as a
-# path. RUNTIME_DIR/locks is guest-writable -- on Termux it sits under the
-# $TERMUX_PREFIX bound read-write into every non-isolated container -- and
+# path. RUNTIME_DIR/locks is guest-writable -- on Termux it sits under
+# $TERMUX_PREFIX, which a session can bind -- and
 # the names in it are predictable, so open(path, "w") followed a planted
 # `<name>.lock -> /host/file` and truncated that file before flocking
 # anything. O_NOFOLLOW refuses the link instead; since nothing but this

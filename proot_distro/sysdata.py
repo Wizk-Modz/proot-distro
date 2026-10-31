@@ -26,8 +26,8 @@
 # container.
 #
 # That directory is guest-writable: on Termux it sits under $TERMUX_PREFIX,
-# which is bound read-write into every non-isolated container, so a session
-# can replace any entry here between runs. Every name below is therefore
+# which a session can bind, so a session can replace any entry here
+# between runs. Every name below is therefore
 # addressed as (directory fd, entry name) with O_NOFOLLOW, never as a path:
 # os.path.exists() plus open(path, "w") followed a planted symlink and
 # created -- or, for a name whose target already existed, silently skipped

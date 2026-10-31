@@ -25,8 +25,8 @@
 #       One file per blob, named for the digest of its content. The
 #       name is not evidence: download_blob() verifies a blob it
 #       fetches, but the directory itself is writable by anything that
-#       can reach it — on Termux it sits under the $TERMUX_PREFIX bound
-#       into every non-isolated container, and `install <archive>`
+#       can reach it — on Termux it sits under the $TERMUX_PREFIX, which
+#       a session can bind, and `install <archive>`
 #       deposits blobs a remote party chose the digests for. Every
 #       consumer therefore re-hashes a blob before using it, via
 #       open_verified_layer() (re-obtainable: evict and refetch) or
@@ -51,8 +51,8 @@
 #       at its word and a pin's need not be (see pull._cached_pin).
 #
 # Neither directory is reached by name. Both sit below BASE_CACHE_DIR,
-# which on Termux is under the $TERMUX_PREFIX bound read-write into
-# every non-isolated container, so `oci_manifests` (or `cache` one level
+# which on Termux is under the $TERMUX_PREFIX, which a session can bind,
+# so `oci_manifests` (or `cache` one level
 # above it) is a name a guest can leave behind as a symlink -- and
 # os.listdir()/open() follow one. The manifest inventory that
 # `list --image` prints, that `remove --image` deletes from, and that
@@ -115,7 +115,8 @@ def manifest_layers(manifest, image_ref: str) -> list:
     An image manifest reaches this program from two places and neither
     is its own: a registry sends one, and the manifest cache holds one
     -- a cache that is guest-writable on Termux, where RUNTIME_DIR sits
-    under the bound $TERMUX_PREFIX. Every consumer then subscripts each
+    under $TERMUX_PREFIX, which a session can bind. Every consumer then
+    subscripts each
     descriptor for its digest and asks it for a mediaType or a size, so
     a manifest whose `layers` is a string, or whose entries are numbers,
     used to end `install` or `push` in a TypeError, an AttributeError or
@@ -525,8 +526,8 @@ def open_verified_layer(digest: str, *, evict: bool = True):
     A **descriptor** rather than a path, because hashing a name and then
     reading that name again are two acts on two possibly-different
     files. The window is not theoretical: on Termux LAYER_CACHE_DIR sits
-    under the `$TERMUX_PREFIX` bound read-write into every non-isolated
-    container, so a guest running while an install proceeds can swap the
+    under `$TERMUX_PREFIX`, which a session can bind, so a guest running
+    while an install proceeds can swap the
     blob between the check and the read. The caller closes it.
 
     Use this wherever the blob can be obtained again (a registry pull, a
@@ -614,7 +615,8 @@ def _text(value) -> str:
     Every string field a record promises passes through here. The values
     come out of a JSON document this program wrote but does not own --
     the manifest cache is guest-writable on Termux, where BASE_CACHE_DIR
-    sits under the bound $TERMUX_PREFIX -- and consumers index the
+    sits under $TERMUX_PREFIX, which a session can bind -- and consumers
+    index the
     record rather than re-checking it: `list --image` measures each cell
     with len() and pads it with ljust(), `remove --image` splits the
     reference into registry/repo/tag, and iter_cached_images() sorts on

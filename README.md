@@ -747,9 +747,15 @@ Each entry is filtered through `realpath` + permission check: traversable
 directories (modes `1`/`5`/`7`) and readable files are bound; anything
 else is silently skipped.
 
-Plus, for normal-type containers, the Termux `$PREFIX` is bound at its
-original path inside the guest so Termux utilities (`termux-api`,
-`pkg`, etc.) are reachable.
+The Termux `$PREFIX` is **not** bound. It used to be mounted for
+normal-type containers so host utilities (`termux-api`, `pkg`, etc.)
+were reachable, but that also exposed the program's own runtime
+directory and image cache to the guest. Bind it explicitly when you
+need those tools:
+
+```sh
+proot-distro login --bind=$PREFIX ubuntu
+```
 
 #### Guest environment
 
@@ -792,23 +798,23 @@ NUL byte, a code point the filesystem encoding cannot carry, or a
 `NAME=value` longer than the 128 KiB `execve(2)` accepts for one
 string — is left out, whichever of the sources above it came from.
 
-After the precedence pass, `$PREFIX/bin` is appended to `PATH` so
-Termux host tools stay reachable inside the guest. A snippet at
-`/etc/profile.d/termux-profile.sh` re-applies every login-time
-environment variable (PATH, image Env, identity variables, Android
-system vars, `--env` flags) after the distro's `/etc/profile` resets
-the environment on login — without it, running `su - someuser` inside
-the container would silently drop those values. Per-session vars
-(`HOME`, `USER`, `TERM`, `COLORTERM`) and proot-internal vars are
-excluded. Every session of a `normal`-type container rewrites the
+A snippet at `/etc/profile.d/termux-profile.sh` re-applies every
+login-time environment variable (image Env, identity variables, Android
+system vars, `--env` flags) after the distro's `/etc/profile` resets the
+environment on login — without it, running `su - someuser` inside the
+container would silently drop those values. Per-session vars
+(`HOME`, `USER`, `TERM`, `COLORTERM`), `PATH` and proot-internal vars
+are excluded. Every session of a `normal`-type container rewrites the
 snippet, in every mode and on every host, so what `su -` re-exports is
-what the current session was given; only the `PATH` append is limited
-to the default mode on Termux, where the prefix it names is actually
-bound.
+what the current session was given.
 
-In `--minimal` mode steps 1 and 4 and the `PATH` post-processing are
-skipped; only the image `Env`, the identity variables, your `--env`
-entries and `TERM`/`COLORTERM` are exported.
+The Termux `$PREFIX/bin` directory is not added to the guest `PATH`,
+because the prefix is not bound. Pass `--env PATH=...` together with
+`--bind=$PREFIX` if a container needs to reach host tools.
+
+In `--minimal` mode steps 1 and 4 are skipped; only the image `Env`,
+the identity variables, your `--env` entries and `TERM`/`COLORTERM`
+are exported.
 
 #### Legacy migration
 

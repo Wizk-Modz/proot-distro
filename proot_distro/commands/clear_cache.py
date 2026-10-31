@@ -147,8 +147,8 @@ def _open_cache_root() -> int:
     """Open BASE_CACHE_DIR as a descriptor. Raises what it cannot open.
 
     On Termux the cache lives *inside* RUNTIME_DIR, whose components are
-    guest-writable -- $TERMUX_PREFIX is bound read-write into every
-    non-isolated container -- so `cache` is one more name a session can
+    guest-writable -- RUNTIME_DIR sits under $TERMUX_PREFIX, which a
+    session can bind -- so `cache` is one more name a session can
     leave behind as a symlink. os.path.isdir() answered "yes" for one and
     dirfd.opendir() then followed it, handing this command a host
     directory to empty. statedir walks down to the root with O_NOFOLLOW
@@ -170,8 +170,8 @@ def _tree_size(root_fd: int) -> int:
 
     os.walk() plus os.stat()/os.chmod() on each name was the shape of
     this, and every one of those calls follows a symlink. The cache is
-    guest-writable -- on Termux it sits under the $TERMUX_PREFIX bound
-    read-write into every non-isolated container -- so a planted
+    guest-writable -- on Termux it sits under the $TERMUX_PREFIX, which
+    a session can bind -- so a planted
     `oci_layers/x -> ~/.bashrc` had its target stat'ed for the total and
     chmod'ed u+rw on the way past. Nothing needs relaxing to be measured
     or unlinked in the first place except a directory that cannot be
@@ -263,10 +263,10 @@ def command_clear_cache(args) -> None:
         log_info("Clearing cache...")
 
         # Through descriptors, and iteratively. On Termux this directory
-        # sits under the bound $TERMUX_PREFIX, so a guest can build a tree
-        # here deeper than the interpreter's stack — and shutil.rmtree()
-        # answered that with a RecursionError, which an `except OSError`
-        # does not catch. Reporting is the walk's own callbacks, which
+        # sits under $TERMUX_PREFIX, which a session can bind, so a guest
+        # can build a tree here deeper than the interpreter's stack — and
+        # shutil.rmtree() answered that with a RecursionError, which an
+        # `except OSError` does not catch. Reporting is the walk's own callbacks, which
         # name the entry that actually would not go rather than the
         # directory above it. rmtree_at covers a plain file at the top
         # level too, so there is one removal path rather than two.
